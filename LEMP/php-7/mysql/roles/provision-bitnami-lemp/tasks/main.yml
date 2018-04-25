@@ -1,0 +1,206 @@
+- name: create database credentials as secret
+  k8s_v1_secret:
+    state: present
+    name: database-secret
+    namespace: '{{ namespace }}'
+    data:
+      DB_HOST: "{{ 'database-service' | b64encode }}"
+      DB_NAME: "{{ db_name | b64encode }}"
+      DB_PASSWORD: "{{ db_password | b64encode }}"
+      DB_PORT: "{{ '3306' | b64encode }}"
+      DB_TYPE: "{{ 'mysql' | b64encode }}"
+      DB_USER: "{{ db_user | b64encode }}"
+
+- name: create database volume claim
+  k8s_v1_persistent_volume_claim:
+    state: present
+    name: database-volume-claim
+    namespace: "{{ namespace }}"
+    labels:
+      app: mysql
+      service: mysql
+    access_modes:
+      - ReadWriteOnce
+    resources_requests:
+      storage: "{{ volume_size }}"
+
+- name: create database deployment config
+  openshift_v1_deployment_config:
+    name: mysql
+    namespace: '{{ namespace }}'
+    labels:
+      app: mysql
+      service: mysql
+    replicas: 1
+    selector:
+      app: mysql
+      service: mysql
+    spec_template_metadata_labels:
+      app: mysql
+      service: mysql
+    containers:
+      - name: mysql
+        image: registry.access.redhat.com/rhscl/mysql-57-rhel7
+        imagePullPolicy: Always
+        ports:
+          - container_port: 3306
+            protocol: TCP
+        volume_mounts:
+          - mount_path: /var/lib/mysql
+            name: mysql-data
+        working_dir: /
+        env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_USER
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_NAME
+    volumes:
+      - name: mysql-data
+        persistent_volume_claim:
+          claim_name: database-volume-claim
+
+- name: create php-fpm-nginx deployment config
+  openshift_v1_deployment_config:
+    name: php-fpm-nginx
+    namespace: '{{ namespace }}'
+    labels:
+      app: php-fpm-nginx
+      service: php-fpm-nginx
+    replicas: 1
+    selector:
+      app: php-fpm-nginx
+      service: php-fpm-nginx
+    spec_template_metadata_labels:
+      app: php-fpm-nginx
+      service: php-fpm-nginx
+    init_containers:
+      - name: git-sync
+        image: docker.io/carrodher/git-sync-amd64:v2.0.6-6-g8c16b75-dirty
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: application
+            mountPath: /git
+        env:
+          - name: GIT_SYNC_REPO
+            value: "{{ git_repo }}"
+          - name: GIT_SYNC_DEST
+            value: app
+          - name: GIT_SYNC_ONE_TIME
+            value: "true"
+    containers:
+      - name: php-fpm
+        image: docker.io/carrodher/php-fpm-non-root-7.2
+        imagePullPolicy: Always
+        ports:
+          - container_port: 9000
+            protocol: TCP
+        volumeMounts:
+          - name: application
+            mountPath: /git
+        env:
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_NAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_PASSWORD
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_PORT
+        - name: DB_TYPE
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_TYPE
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_USER
+      - name: nginx
+        image: docker.io/alessfg/openshift-nginx
+        imagePullPolicy: Always
+        ports:
+          - container_port: 8080
+            protocol: TCP
+        volumeMounts:
+          - name: configuration
+            mountPath: /etc/nginx/conf.d
+          - name: application
+            mountPath: /git
+    volumes:
+      - name: configuration
+        configMap:
+          name: nginx-conf
+          items:
+            - key: nginx-conf
+              path: default.conf
+      - name: application
+        emptyDir: []
+
+- name: create database service
+  k8s_v1_service:
+    name: database-service
+    namespace: '{{ namespace }}'
+    state: present
+    labels:
+      app: mysql
+      service: mysql
+    selector:
+      app: mysql
+      service: mysql
+    ports:
+      - name: mysql
+        port: 3306
+        target_port: 3306
+
+- name: create NGINX service
+  k8s_v1_service:
+    name: nginx-service
+    namespace: '{{ namespace }}'
+    state: present
+    labels:
+      app: php-fpm-nginx
+      service: php-fpm-nginx
+    selector:
+      app: php-fpm-nginx
+      service: php-fpm-nginx
+    ports:
+      - name: web
+        port: 80
+        target_port: 8080
+
+- name: create NGINX route
+  openshift_v1_route:
+    name: nginx-route
+    namespace: '{{ namespace }}'
+    spec_port_target_port: web
+    labels:
+      app: php-fpm-nginx
+      service: php-fpm-nginx
+    to_name: nginx-service
+
+- name: create NGINX config from template
+  template:
+    src: default.conf.j2
+    dest: /tmp/default.conf
+
+- name: Create NGINX configMap
+  shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/default.conf
