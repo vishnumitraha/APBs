@@ -100,7 +100,7 @@
             value: "true"
     containers:
       - name: php-fpm
-        image: docker.io/carrodher/php-fpm-non-root-7.2
+        image: docker.io/javsalgar/php-fpm-redhat:7.2
         imagePullPolicy: Always
         ports:
           - container_port: 9000
