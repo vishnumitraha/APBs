@@ -1,0 +1,51 @@
+
+version: 1.0
+name: bitnami-lamp5
+description: Bitnami LAMP5 Ansible Playbook Bundle
+bindable: False
+async: optional
+metadata:
+  displayName: Bitnami LAMP5 (APB)
+  dependencies:
+    - 'registry.access.redhat.com/rhscl/httpd-24-rhel7'
+    - 'registry.access.redhat.com/rhscl/mariadb-101-rhel7'
+    - 'docker.io/carrodher/php-fpm-non-root-5.6'
+  documentationUrl: https://docs.bitnami.com/installer/infrastructure/lamp/
+  imageUrl: https://d7umqicpi7263.cloudfront.net/img/product/963e08a0-1e5f-40b3-9a1d-72ae322da2ac/c6520697-2852-4094-a9a1-82939c353704.png
+  providerDisplayName: Bitnami
+plans:
+  - name: default
+    description: This default plan deploys php-fpm 5.6, Apache and MariaDB
+    free: True
+    metadata: {}
+    parameters:
+      - name: git_repo
+        default: https://github.com/carrodher/sample-PHP-app
+        type: string
+        title: Git Repository
+        description: Git repository containing PHP application
+        required: true
+      - name: db_name
+        default: database
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database name
+        description: Database name
+      - name: db_user
+        default: dbuser
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database user
+        description: Database user
+      - name: db_password
+        type: string
+        title: Database password
+        description: Database password
+        display_type: password
+        required: true
+      - name: volume_size
+        type: enum
+        default: '1Gi'
+        enum: ['1Gi', '5Gi', '10Gi']
+        title: Database volume size
+        required: true

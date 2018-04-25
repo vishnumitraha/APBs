@@ -1,0 +1,50 @@
+version: 1.0
+name: bitnami-lemp7
+description: Bitnami LEMP7 Ansible Playbook Bundle
+bindable: False
+async: optional
+metadata:
+  displayName: Bitnami LEMP7 (APB)
+  dependencies:
+    - 'docker.io/alessfg/openshift-nginx'
+    - 'docker.io/carrodher/php-fpm-non-root-7.2'
+    - 'registry.access.redhat.com/rhscl/mariadb-101-rhel7'
+  documentationUrl: https://docs.bitnami.com/installer/infrastructure/nginx/
+  imageUrl: https://d7umqicpi7263.cloudfront.net/img/product/9cc2495d-ab06-48ea-8cdf-e203f8fb6ef0/d7aded9f-55bc-4160-8b73-7854c2109461.png
+  providerDisplayName: Bitnami
+plans:
+  - name: default
+    description: This default plan deploys php-fpm 7.2, Nginx and MariaDB
+    free: True
+    metadata: {}
+    parameters:
+      - name: git_repo
+        default: https://github.com/carrodher/sample-PHP-app
+        type: string
+        title: Git Repository
+        description: Git repository containing PHP application
+        required: true
+      - name: db_name
+        default: database
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database name
+        description: Database name
+      - name: db_user
+        default: dbuser
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database user
+        description: Database user
+      - name: db_password
+        type: string
+        title: Database password
+        description: Database password
+        display_type: password
+        required: true
+      - name: volume_size
+        type: enum
+        default: '1Gi'
+        enum: ['1Gi', '5Gi', '10Gi']
+        title: Database volume size
+        required: true
