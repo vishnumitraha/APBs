@@ -1,6 +1,6 @@
 # Bitnami APBs
 
-> An [Ansible Playbook Bundle (APB)](https://github.com/ansibleplaybookbundle/ansible-playbook-bundle){:target="_blank"} is a lightweight application definition (meta-container). They are used to define and deploy complex groups of applications, deployment configs, deployments, and services to an [OpenShift Origin](https://github.com/OpenShift/origin){:target="_blank"} cluster running the [Ansible Service Broker](https://github.com/openshift/ansible-service-broker){:target="_blank"}. APBs offer more power and simple configuration by leveraging the power of [Ansible](https://www.ansible.com/){:target="_blank"}.
+> An [Ansible Playbook Bundle (APB)](https://github.com/ansibleplaybookbundle/ansible-playbook-bundle) is a lightweight application definition (meta-container). They are used to define and deploy complex groups of applications, deployment configs, deployments, and services to an [OpenShift Origin](https://github.com/OpenShift/origin) cluster running the [Ansible Service Broker](https://github.com/openshift/ansible-service-broker). APBs offer more power and simple configuration by leveraging the power of [Ansible](https://www.ansible.com/).
 
 In this repository you can take a look at some of the Bundles provided by Bitnami.
 
