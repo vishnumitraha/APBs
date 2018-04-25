@@ -134,7 +134,7 @@
             secretKeyRef:
               name: database-secret
               key: DB_USER
-      - name: php-fpm-apache
+      - name: apache
         image: registry.access.redhat.com/rhscl/httpd-24-rhel7
         imagePullPolicy: Always
         ports:
