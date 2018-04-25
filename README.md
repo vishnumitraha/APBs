@@ -1,12 +1,14 @@
-# LEMP-APB
+# Bitnami APBs
 
-LEMP Ansible Playbook Bundle
+> An [Ansible Playbook Bundle (APB)](https://github.com/ansibleplaybookbundle/ansible-playbook-bundle){:target="_blank"} is a lightweight application definition (meta-container). They are used to define and deploy complex groups of applications, deployment configs, deployments, and services to an [OpenShift Origin](https://github.com/OpenShift/origin){:target="_blank"} cluster running the [Ansible Service Broker](https://github.com/openshift/ansible-service-broker){:target="_blank"}. APBs offer more power and simple configuration by leveraging the power of [Ansible](https://www.ansible.com/){:target="_blank"}.
 
-## Test it
+In this repository you can take a look at some of the Bundles provided by Bitnami.
+
+## Test it (for example LEMP7 with MariaDB)
 
 ```
-git clone https://github.com/bitnami/LEMP-APB.git
-cd LEMP-APB
+git clone https://github.com/bitnami/APBs.git
+cd APBs/LEMP/php-7/mariadb
 ```
 
 Prepare the ansible-container project for APB packaging:
@@ -54,7 +56,7 @@ The next example shows a `docker run` command which will perform the `provision`
 
 ```
 docker run --rm --net=host -v $HOME/.kube:/opt/apb/.kube -u $(id -u) \
-bitnami-lemp \
+bitnami-lemp7-mariadb \
 provision \
 --extra-vars 'namespace=php-nginx' \
 --extra-vars db_user=bitnami \
