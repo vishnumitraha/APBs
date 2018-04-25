@@ -4,7 +4,7 @@
 
 In this repository you can take a look at some of the Bundles provided by Bitnami.
 
-## Test it (for example LEMP7 with MariaDB)
+## Test it *(for example LEMP7 with MariaDB)*
 
 ```
 git clone https://github.com/bitnami/APBs.git
@@ -35,7 +35,7 @@ Relist the APBs available within the Service Catalog:
 apb relist
 ```
 
-### Using docker run to quickly test a Service Bundle
+### Using `docker run` to quickly test a Service Bundle
 
 While developing Service Bundles, you may want to quickly test a Bundle without involving the Automation Broker or Service Catalog. This can be accomplished by using a `docker run` command.
 
