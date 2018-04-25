@@ -7,7 +7,7 @@ metadata:
   displayName: Bitnami LEMP5 with MariaDB (APB)
   dependencies:
     - 'docker.io/alessfg/openshift-nginx'
-    - 'docker.io/carrodher/php-fpm-non-root-5.6'
+    - 'docker.io/javsalgar/php-fpm-redhat:5.6'
     - 'registry.access.redhat.com/rhscl/mariadb-101-rhel7'
   documentationUrl: https://docs.bitnami.com/installer/infrastructure/nginx/
   imageUrl: https://d7umqicpi7263.cloudfront.net/img/product/9cc2495d-ab06-48ea-8cdf-e203f8fb6ef0/d7aded9f-55bc-4160-8b73-7854c2109461.png
