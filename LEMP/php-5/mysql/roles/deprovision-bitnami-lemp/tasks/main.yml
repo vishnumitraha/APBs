@@ -1,0 +1,44 @@
+- name: delete php-fpm-nginx deployment config
+  openshift_v1_deployment_config:
+    name: php-fpm-nginx
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete database deployment config
+  openshift_v1_deployment_config:
+    name: mysql
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete NGINX route
+  openshift_v1_route:
+    name: nginx-route
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete NGINX service
+  k8s_v1_service:
+    name: nginx-service
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete database service
+  k8s_v1_service:
+    name: database-service
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete database volume claim
+  k8s_v1_persistent_volume_claim:
+    name: database-volume-claim
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete database credentials as secret
+  k8s_v1_secret:
+    name: database-secret
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete NGINX config map
+  shell: oc delete configmap nginx-conf
