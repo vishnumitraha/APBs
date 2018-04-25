@@ -1,10 +1,10 @@
 version: 1.0
-name: bitnami-lemp7
-description: Bitnami LEMP7 Ansible Playbook Bundle
+name: bitnami-lemp7-mariadb
+description: Bitnami LEMP7 with MariaDB Ansible Playbook Bundle
 bindable: False
 async: optional
 metadata:
-  displayName: Bitnami LEMP7 (APB)
+  displayName: Bitnami LEMP7 with MariaDB (APB)
   dependencies:
     - 'docker.io/alessfg/openshift-nginx'
     - 'docker.io/carrodher/php-fpm-non-root-7.2'

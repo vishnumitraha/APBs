@@ -1,11 +1,11 @@
 
 version: 1.0
-name: bitnami-lamp7
-description: Bitnami LAMP7 Ansible Playbook Bundle
+name: bitnami-lamp7-mariadb
+description: Bitnami LAMP7 with MariaDB Ansible Playbook Bundle
 bindable: False
 async: optional
 metadata:
-  displayName: Bitnami LAMP7 (APB)
+  displayName: Bitnami LAMP7 with MariaDB (APB)
   dependencies:
     - 'registry.access.redhat.com/rhscl/httpd-24-rhel7'
     - 'registry.access.redhat.com/rhscl/mariadb-101-rhel7'
