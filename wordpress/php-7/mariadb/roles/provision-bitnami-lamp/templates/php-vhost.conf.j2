@@ -1,0 +1,14 @@
+AddType application/x-httpd-php .php
+
+<VirtualHost *:8080>
+    ServerName httpd.example.com
+    ServerAlias www.httpd.example.com
+    DocumentRoot "/git/app"
+    ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000/git/app/$1
+    DirectoryIndex /index.html index.html /index.php index.php
+    <Directory /git/app>
+      Options Indexes FollowSymLinks
+      AllowOverride None
+      Require all granted
+    </Directory>
+</VirtualHost>
