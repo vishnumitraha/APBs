@@ -1,6 +1,6 @@
-- name: delete php-fpm-apache deployment config
+- name: delete wordpress deployment config
   openshift_v1_deployment_config:
-    name: php-fpm-apache
+    name: wordpress
     namespace: '{{ namespace }}'
     state: absent
 
@@ -39,6 +39,3 @@
     name: database-secret
     namespace: '{{ namespace }}'
     state: absent
-
-- name: delete Apache config map
-  shell: oc delete configmap apache-conf

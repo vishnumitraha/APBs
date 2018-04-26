@@ -70,90 +70,27 @@
         persistent_volume_claim:
           claim_name: database-volume-claim
 
-- name: create php-fpm-apache deployment config
+- name: create wordpress deployment config
   openshift_v1_deployment_config:
-    name: php-fpm-apache
+    name: wordpress
     namespace: '{{ namespace }}'
     labels:
-      app: php-fpm-apache
-      service: php-fpm-apache
+      app: wordpress
+      service: wordpress
     replicas: 1
     selector:
-      app: php-fpm-apache
-      service: php-fpm-apache
+      app: wordpress
+      service: wordpress
     spec_template_metadata_labels:
-      app: php-fpm-apache
-      service: php-fpm-apache
-    init_containers:
-      - name: git-sync
-        image: docker.io/carrodher/git-sync-amd64:v2.0.6-6-g8c16b75-dirty
-        imagePullPolicy: Always
-        volumeMounts:
-          - name: application
-            mountPath: /git
-        env:
-          - name: GIT_SYNC_REPO
-            value: "{{ git_repo }}"
-          - name: GIT_SYNC_DEST
-            value: app
-          - name: GIT_SYNC_ONE_TIME
-            value: "true"
+      app: wordpress
+      service: wordpress
     containers:
-      - name: php-fpm
-        image: docker.io/javsalgar/php-fpm-redhat:7.2
-        imagePullPolicy: Always
-        ports:
-          - container_port: 9000
-            protocol: TCP
-        volumeMounts:
-          - name: application
-            mountPath: /git
-        env:
-        - name: DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_NAME
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_PASSWORD
-        - name: DB_PORT
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_PORT
-        - name: DB_TYPE
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_TYPE
-        - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_USER
-      - name: apache
-        image: registry.access.redhat.com/rhscl/httpd-24-rhel7
+      - name: wordpress
+        image: docker.io/javsalgar/bitnami-wordpress-rhel
         imagePullPolicy: Always
         ports:
           - container_port: 8080
             protocol: TCP
-        volumeMounts:
-          - name: configuration
-            mountPath: /etc/httpd/conf.d/php-vhost.conf
-          - name: application
-            mountPath: /git
-    volumes:
-      - name: configuration
-        configMap:
-          name: apache-conf
-          items:
-            - key: apache-conf
-              path: php-vhost.conf
-      - name: application
-        emptyDir: []
 
 - name: create database service
   k8s_v1_service:
@@ -177,11 +114,11 @@
     namespace: '{{ namespace }}'
     state: present
     labels:
-      app: php-fpm-apache
-      service: php-fpm-apache
+      app: wordpress
+      service: wordpress
     selector:
-      app: php-fpm-apache
-      service: php-fpm-apache
+      app: wordpress
+      service: wordpress
     ports:
       - name: web
         port: 80
@@ -193,15 +130,7 @@
     namespace: '{{ namespace }}'
     state: present
     labels:
-      app: php-fpm-apache
-      service: php-fpm-apache
+      app: wordpress
+      service: wordpress
     to_name: apache-service
     spec_port_target_port: web
-
-- name: create Apache config from template
-  template:
-    src: php-vhost.conf.j2
-    dest: /tmp/php-vhost.conf
-
-- name: create Apache configMap
-  shell: oc create configmap apache-conf --from-file=apache-conf=/tmp/php-vhost.conf
