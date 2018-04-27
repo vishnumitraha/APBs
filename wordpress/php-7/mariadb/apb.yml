@@ -27,13 +27,14 @@ plans:
         pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
         type: string
         title: WordPress admin username
-        description: WordPress admin username 
+        description: WordPress admin username
         required: true
       - name: wp_password
         pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
         type: string
         title: WordPress admin password
-        description: WordPress admin username 
+        description: WordPress admin password
+        display_type: password
         required: true
       - name: db_name
         default: database
