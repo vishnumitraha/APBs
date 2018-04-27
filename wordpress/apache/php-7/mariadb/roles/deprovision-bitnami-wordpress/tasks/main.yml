@@ -49,6 +49,7 @@
 - name: delete wordpress volume claim
   k8s_v1_persistent_volume_claim:
     state: absent
+    namespace: '{{ namespace }}'    
     name: wordpress-volume-claim
 
 - name: delete Apache config map

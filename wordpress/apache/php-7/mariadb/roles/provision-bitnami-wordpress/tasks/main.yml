@@ -122,8 +122,9 @@
         volumeMounts:
           - name: configuration
             mountPath: /bitnami/apache/conf/vhosts/wordpress-vhosts.conf
-          - mountPath: /bitnami
-            name: wordpress-vol
+            subPath: apache-conf
+          - name: wordpress-vol
+            mountPath: /bitnami/wordpress
         ports:
           - container_port: 8080
             protocol: TCP
@@ -170,9 +171,6 @@
     - name: configuration
       configMap:
         name: apache-conf
-        items:
-          - key: apache-conf
-            path: wordpress-vhosts.conf
     - name: wordpress-vol
       persistentVolumeClaim:
         claimName: wordpress-volume-claim
