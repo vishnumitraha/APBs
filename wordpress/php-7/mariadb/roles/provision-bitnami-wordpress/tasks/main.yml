@@ -11,6 +11,24 @@
       DB_TYPE: "{{ 'mysql' | b64encode }}"
       DB_USER: "{{ db_user | b64encode }}"
 
+- name: create wordpress credentials as secret
+  k8s_v1_secret:
+    state: present
+    name: wordpress-secret
+    namespace: '{{ namespace }}'
+    data:
+      WP_USERNAME: "{{ wp_username | b64encode }}"
+      WP_PASSWORD: "{{ wp_password | b64encode }}"
+
+- name: create Apache config from template
+  template:
+    src: wordpress-vhosts.conf.j2
+    dest: /tmp/wordpress-vhosts.conf
+
+- name: create Apache configMap
+  shell: oc create configmap apache-conf --from-file=apache-conf=/tmp/wordpress-vhosts.conf
+
+
 - name: create database volume claim
   k8s_v1_persistent_volume_claim:
     state: present
@@ -19,6 +37,19 @@
     labels:
       app: mariadb
       service: mariadb
+    access_modes:
+      - ReadWriteOnce
+    resources_requests:
+      storage: "{{ volume_size }}"
+
+- name: create wordpress volume claim
+  k8s_v1_persistent_volume_claim:
+    state: present
+    name: wordpress-volume-claim
+    namespace: "{{ namespace }}"
+    labels:
+      app: wordpress
+      service: wordpress
     access_modes:
       - ReadWriteOnce
     resources_requests:
@@ -88,9 +119,64 @@
       - name: wordpress
         image: docker.io/javsalgar/bitnami-wordpress-rhel
         imagePullPolicy: Always
+        volumeMounts:
+          - name: configuration
+            mountPath: /bitnami/apache/conf/vhosts/wordpress-vhosts.conf
+          - mountPath: /bitnami
+            name: wordpress-vol
         ports:
           - container_port: 8080
             protocol: TCP
+        env:
+        # Database credentials
+        - name: MARIADB_HOST
+          value: database-service
+        - name: MARIADB_PORT_NUMBER
+          value: "3306"
+        - name: WORDPRESS_DATABASE_USER
+          # Use secret from mariadb credentials
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_USER
+        - name: WORDPRESS_DATABASE_PASSWORD
+          # Use secret from mariadb credentials
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_PASSWORD
+        - name: WORDPRESS_DATABASE_NAME
+          # Use secret from mariadb credentials
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DB_NAME
+          # Some Wordpress basic data
+        - name: WORDPRESS_BLOG_NAME
+          value: "{{ blog_name }}"
+        - name: WORDPRESS_PASSWORD
+          # Use secret from wordpress credentials
+          valueFrom:
+            secretKeyRef:
+              name: wordpress-secret
+              key: WP_PASSWORD
+        - name: WORDPRESS_USERNAME
+          # Use secret from wordpress credentials
+          valueFrom:
+            secretKeyRef:
+              name: wordpress-secret
+              key: WP_USERNAME
+    volumes:
+    - name: configuration
+      configMap:
+        name: apache-conf
+        items:
+          - key: apache-conf
+            path: wordpress-vhosts.conf
+    - name: wordpress-vol
+      persistentVolumeClaim:
+        claimName: wordpress-volume-claim
+
 
 - name: create database service
   k8s_v1_service:

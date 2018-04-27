@@ -39,3 +39,17 @@
     name: database-secret
     namespace: '{{ namespace }}'
     state: absent
+
+- name: delete wordpress credentials as secret
+  k8s_v1_secret:
+    name: wordpress-secret
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: delete wordpress volume claim
+  k8s_v1_persistent_volume_claim:
+    state: absent
+    name: wordpress-volume-claim
+
+- name: delete Apache config map
+  shell: oc delete configmap apache-conf
