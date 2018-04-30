@@ -10,15 +10,15 @@
     namespace: '{{ namespace }}'
     state: absent
 
-- name: delete Apache route
+- name: delete NGINX route
   openshift_v1_route:
-    name: apache-route
+    name: nginx-route
     namespace: '{{ namespace }}'
     state: absent
 
-- name: delete Apache service
+- name: delete NGINX service
   k8s_v1_service:
-    name: apache-service
+    name: nginx-service
     namespace: '{{ namespace }}'
     state: absent
 
@@ -51,5 +51,5 @@
     state: absent
     name: wordpress-volume-claim
 
-- name: delete Apache config map
-  shell: oc delete configmap apache-conf
+- name: delete NGINX config map
+  shell: oc delete configmap nginx-conf

@@ -20,13 +20,13 @@
       WP_USERNAME: "{{ wp_username | b64encode }}"
       WP_PASSWORD: "{{ wp_password | b64encode }}"
 
-- name: create Apache config from template
+- name: create NGINX config from template
   template:
-    src: wordpress-vhosts.conf.j2
-    dest: /tmp/wordpress-vhosts.conf
+    src: wordpress.conf.j2
+    dest: /tmp/wordpress.conf
 
-- name: create Apache configMap
-  shell: oc create configmap apache-conf --from-file=apache-conf=/tmp/wordpress-vhosts.conf
+- name: create NGINX configMap
+  shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/wordpress.conf
 
 
 - name: create database volume claim
@@ -117,13 +117,14 @@
       service: wordpress
     containers:
       - name: wordpress
-        image: docker.io/javsalgar/bitnami-wordpress-rhel
+        image: docker.io/javsalgar/bitnami-wordpress-rhel:nginx2
         imagePullPolicy: Always
         volumeMounts:
           - name: configuration
-            mountPath: /bitnami/apache/conf/vhosts/wordpress-vhosts.conf
-          - mountPath: /bitnami
-            name: wordpress-vol
+            mountPath: /bitnami/nginx/conf/vhosts/wordpress.conf
+            subPath: nginx-conf
+          - name: wordpress-vol
+            mountPath: /bitnami
         ports:
           - container_port: 8080
             protocol: TCP
@@ -169,10 +170,7 @@
     volumes:
     - name: configuration
       configMap:
-        name: apache-conf
-        items:
-          - key: apache-conf
-            path: wordpress-vhosts.conf
+        name: nginx-conf
     - name: wordpress-vol
       persistentVolumeClaim:
         claimName: wordpress-volume-claim
@@ -194,9 +192,9 @@
         port: 3306
         target_port: 3306
 
-- name: create Apache service
+- name: create NGINX service
   k8s_v1_service:
-    name: apache-service
+    name: nginx-service
     namespace: '{{ namespace }}'
     state: present
     labels:
@@ -210,13 +208,12 @@
         port: 80
         target_port: 8080
 
-- name: create Apache route
+- name: create NGINX route
   openshift_v1_route:
-    name: apache-route
+    name: nginx-route
     namespace: '{{ namespace }}'
-    state: present
+    spec_port_target_port: web
     labels:
       app: wordpress
       service: wordpress
-    to_name: apache-service
-    spec_port_target_port: web
+    to_name: nginx-service
