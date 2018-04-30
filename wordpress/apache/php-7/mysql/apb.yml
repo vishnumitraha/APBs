@@ -4,7 +4,7 @@ description: Bitnami WordPress with PHP7 and MySQL Ansible Playbook Bundle
 bindable: False
 async: optional
 metadata:
-  displayName: Bitnami WordPress with PHP7 and MariaDB (APB)
+  displayName: Bitnami WordPress with PHP7 and mysql (APB)
   dependencies:
     - 'registry.access.redhat.com/rhscl/mysql-57-rhel7'
     - 'docker.io/javsalgar/bitnami-wordpress-rhel'
@@ -13,7 +13,7 @@ metadata:
   providerDisplayName: Bitnami
 plans:
   - name: default
-    description: This default plan deploys WordPress with php-fpm 7.2, Apache and MariaDB
+    description: This default plan deploys WordPress with php-fpm 7.2, Apache and mysql
     free: True
     metadata: {}
     parameters:
