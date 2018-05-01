@@ -20,13 +20,21 @@
       WP_USERNAME: "{{ wp_username | b64encode }}"
       WP_PASSWORD: "{{ wp_password | b64encode }}"
 
-- name: create NGINX config from template
+- name: create WordPress NGINX config from template
   template:
     src: wordpress.conf.j2
     dest: /tmp/wordpress.conf
 
+- name: create WordPress NGINX configMap
+  shell: oc create configmap wordpress-nginx-conf --from-file=wordpress-nginx-conf=/tmp/wordpress.conf
+
+- name: create NGINX general config from template
+  template:
+    src: nginx.conf.j2
+    dest: /tmp/nginx.conf
+
 - name: create NGINX configMap
-  shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/wordpress.conf
+  shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/nginx.conf
 
 
 - name: create database volume claim
@@ -117,14 +125,17 @@
       service: wordpress
     containers:
       - name: wordpress
-        image: docker.io/carrodher/bitnami-wordpress-rhel-nginx-php5
+        image: docker.io/javsalgar/bitnami-wordpress-rhel-nginx-php5
         imagePullPolicy: Always
         volumeMounts:
-          - name: configuration
+          - name: wordpress-nginx-configuration
             mountPath: /bitnami/nginx/conf/vhosts/wordpress.conf
+            subPath: wordpress-nginx-conf
+          - name: nginx-configuration
+            mountPath: /bitnami/nginx/conf/nginx.conf
             subPath: nginx-conf
           - name: wordpress-vol
-            mountPath: /bitnami
+            mountPath: /bitnami/wordpress
         ports:
           - container_port: 8080
             protocol: TCP
@@ -168,9 +179,12 @@
               name: wordpress-secret
               key: WP_USERNAME
     volumes:
-    - name: configuration
+    - name: nginx-configuration
       configMap:
         name: nginx-conf
+    - name: wordpress-nginx-configuration
+      configMap:
+        name: wordpress-nginx-conf
     - name: wordpress-vol
       persistentVolumeClaim:
         claimName: wordpress-volume-claim

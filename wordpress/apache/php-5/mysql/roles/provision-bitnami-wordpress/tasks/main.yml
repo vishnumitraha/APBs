@@ -116,7 +116,7 @@
       service: wordpress
     containers:
       - name: wordpress
-        image: docker.io/carrodher/bitnami-wordpress-rhel-apache-php5
+        image: docker.io/javsalgar/bitnami-wordpress-rhel-apache-php5
         imagePullPolicy: Always
         volumeMounts:
           - name: configuration

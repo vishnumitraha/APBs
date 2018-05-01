@@ -1,10 +1,10 @@
 version: 1.0
-name: bitnami-wordpress-php7-mysql
-description: Bitnami WordPress with PHP7 and MySQL Ansible Playbook Bundle
+name: bitnami-wordpress-apache-php7-mysql
+description: Bitnami WordPress with Apache, PHP7 and MySQL Ansible Playbook Bundle
 bindable: False
 async: optional
 metadata:
-  displayName: Bitnami WordPress with PHP7 and mysql (APB)
+  displayName: Bitnami WordPress with Apache, PHP7 and MySQL (APB)
   dependencies:
     - 'registry.access.redhat.com/rhscl/mysql-57-rhel7'
     - 'docker.io/javsalgar/bitnami-wordpress-rhel'

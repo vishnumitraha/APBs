@@ -6,7 +6,7 @@
 
 - name: delete database deployment config
   openshift_v1_deployment_config:
-    name: mariadb
+    name: mysql
     namespace: '{{ namespace }}'
     state: absent
 

@@ -43,8 +43,8 @@
     name: database-volume-claim
     namespace: "{{ namespace }}"
     labels:
-      app: mariadb
-      service: mariadb
+      app: mysql
+      service: mysql
     access_modes:
       - ReadWriteOnce
     resources_requests:
@@ -65,28 +65,28 @@
 
 - name: create database deployment config
   openshift_v1_deployment_config:
-    name: mariadb
+    name: mysql
     namespace: '{{ namespace }}'
     labels:
-      app: mariadb
-      service: mariadb
+      app: mysql
+      service: mysql
     replicas: 1
     selector:
-      app: mariadb
-      service: mariadb
+      app: mysql
+      service: mysql
     spec_template_metadata_labels:
-      app: mariadb
-      service: mariadb
+      app: mysql
+      service: mysql
     containers:
-      - name: mariadb
-        image: registry.access.redhat.com/rhscl/mariadb-101-rhel7
+      - name: mysql
+        image: registry.access.redhat.com/rhscl/mysql-57-rhel7
         imagePullPolicy: Always
         ports:
           - container_port: 3306
             protocol: TCP
         volume_mounts:
           - mount_path: /var/lib/mysql
-            name: mariadb-data
+            name: mysql-data
         working_dir: /
         env:
           - name: MYSQL_USER
@@ -105,7 +105,7 @@
                 name: database-secret
                 key: DB_NAME
     volumes:
-      - name: mariadb-data
+      - name: mysql-data
         persistent_volume_claim:
           claim_name: database-volume-claim
 
@@ -125,7 +125,7 @@
       service: wordpress
     containers:
       - name: wordpress
-        image: docker.io/javsalgar/bitnami-wordpress-rhel:nginx2
+        image: docker.io/javsalgar/bitnami-wordpress-rhel-nginx-php5
         imagePullPolicy: Always
         volumeMounts:
           - name: wordpress-nginx-configuration
@@ -146,19 +146,19 @@
         - name: MARIADB_PORT_NUMBER
           value: "3306"
         - name: WORDPRESS_DATABASE_USER
-          # Use secret from mariadb credentials
+          # Use secret from mysql credentials
           valueFrom:
             secretKeyRef:
               name: database-secret
               key: DB_USER
         - name: WORDPRESS_DATABASE_PASSWORD
-          # Use secret from mariadb credentials
+          # Use secret from mysql credentials
           valueFrom:
             secretKeyRef:
               name: database-secret
               key: DB_PASSWORD
         - name: WORDPRESS_DATABASE_NAME
-          # Use secret from mariadb credentials
+          # Use secret from mysql credentials
           valueFrom:
             secretKeyRef:
               name: database-secret
@@ -196,11 +196,11 @@
     namespace: '{{ namespace }}'
     state: present
     labels:
-      app: mariadb
-      service: mariadb
+      app: mysql
+      service: mysql
     selector:
-      app: mariadb
-      service: mariadb
+      app: mysql
+      service: mysql
     ports:
       - name: mysql
         port: 3306

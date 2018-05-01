@@ -50,6 +50,10 @@
   k8s_v1_persistent_volume_claim:
     state: absent
     name: wordpress-volume-claim
+    namespace: '{{ namespace }}'
 
 - name: delete NGINX config map
   shell: oc delete configmap nginx-conf
+
+- name: delete WordPress NGINX config map
+  shell: oc delete configmap wordpress-nginx-conf
