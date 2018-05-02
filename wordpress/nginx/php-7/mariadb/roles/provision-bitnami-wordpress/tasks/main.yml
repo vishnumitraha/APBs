@@ -11,7 +11,7 @@
       DB_TYPE: "{{ 'mysql' | b64encode }}"
       DB_USER: "{{ db_user | b64encode }}"
 
-- name: create wordpress credentials as secret
+- name: create WordPress credentials as secret
   k8s_v1_secret:
     state: present
     name: wordpress-secret
@@ -36,7 +36,6 @@
 - name: create NGINX configMap
   shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/nginx.conf
 
-
 - name: create database volume claim
   k8s_v1_persistent_volume_claim:
     state: present
@@ -50,7 +49,7 @@
     resources_requests:
       storage: "{{ volume_size }}"
 
-- name: create wordpress volume claim
+- name: create WordPress volume claim
   k8s_v1_persistent_volume_claim:
     state: present
     name: wordpress-volume-claim
@@ -65,6 +64,7 @@
 
 - name: create database deployment config
   openshift_v1_deployment_config:
+    state: present
     name: mariadb
     namespace: '{{ namespace }}'
     labels:
@@ -85,8 +85,8 @@
           - container_port: 3306
             protocol: TCP
         volume_mounts:
-          - mount_path: /var/lib/mysql
-            name: mariadb-data
+          - name: mariadb-data
+            mount_path: /var/lib/mysql
         working_dir: /
         env:
           - name: MYSQL_USER
@@ -109,8 +109,9 @@
         persistent_volume_claim:
           claim_name: database-volume-claim
 
-- name: create wordpress deployment config
+- name: create WordPress deployment config
   openshift_v1_deployment_config:
+    state: present
     name: wordpress
     namespace: '{{ namespace }}'
     labels:
@@ -127,6 +128,9 @@
       - name: wordpress
         image: docker.io/javsalgar/bitnami-wordpress-rhel:nginx2
         imagePullPolicy: Always
+        ports:
+          - container_port: 8080
+            protocol: TCP
         volumeMounts:
           - name: wordpress-nginx-configuration
             mountPath: /bitnami/nginx/conf/vhosts/wordpress.conf
@@ -134,67 +138,58 @@
           - name: nginx-configuration
             mountPath: /bitnami/nginx/conf/nginx.conf
             subPath: nginx-conf
-          - name: wordpress-vol
+          - name: wordpress-data
             mountPath: /bitnami/wordpress
-        ports:
-          - container_port: 8080
-            protocol: TCP
         env:
-        # Database credentials
-        - name: MARIADB_HOST
-          value: database-service
-        - name: MARIADB_PORT_NUMBER
-          value: "3306"
-        - name: WORDPRESS_DATABASE_USER
-          # Use secret from mariadb credentials
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_USER
-        - name: WORDPRESS_DATABASE_PASSWORD
-          # Use secret from mariadb credentials
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_PASSWORD
-        - name: WORDPRESS_DATABASE_NAME
-          # Use secret from mariadb credentials
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_NAME
+          # Database credentials
+          - name: MARIADB_HOST
+            value: database-service
+          - name: MARIADB_PORT_NUMBER
+            value: "3306"
+          - name: WORDPRESS_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_USER
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_PASSWORD
+          - name: WORDPRESS_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_NAME
           # Some Wordpress basic data
-        - name: WORDPRESS_BLOG_NAME
-          value: "{{ blog_name }}"
-        - name: WORDPRESS_PASSWORD
-          # Use secret from wordpress credentials
-          valueFrom:
-            secretKeyRef:
-              name: wordpress-secret
-              key: WP_PASSWORD
-        - name: WORDPRESS_USERNAME
-          # Use secret from wordpress credentials
-          valueFrom:
-            secretKeyRef:
-              name: wordpress-secret
-              key: WP_USERNAME
+          - name: WORDPRESS_BLOG_NAME
+            value: "{{ blog_name }}"
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: WP_PASSWORD
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: WP_USERNAME
     volumes:
-    - name: nginx-configuration
-      configMap:
-        name: nginx-conf
-    - name: wordpress-nginx-configuration
-      configMap:
-        name: wordpress-nginx-conf
-    - name: wordpress-vol
-      persistentVolumeClaim:
-        claimName: wordpress-volume-claim
-
+      - name: nginx-configuration
+        configMap:
+          name: nginx-conf
+      - name: wordpress-nginx-configuration
+        configMap:
+          name: wordpress-nginx-conf
+      - name: wordpress-data
+        persistentVolumeClaim:
+          claimName: wordpress-volume-claim
 
 - name: create database service
   k8s_v1_service:
+    state: present
     name: database-service
     namespace: '{{ namespace }}'
-    state: present
     labels:
       app: mariadb
       service: mariadb
@@ -208,9 +203,9 @@
 
 - name: create NGINX service
   k8s_v1_service:
+    state: present
     name: nginx-service
     namespace: '{{ namespace }}'
-    state: present
     labels:
       app: wordpress
       service: wordpress
@@ -224,6 +219,7 @@
 
 - name: create NGINX route
   openshift_v1_route:
+    state: present
     name: nginx-route
     namespace: '{{ namespace }}'
     spec_port_target_port: web
