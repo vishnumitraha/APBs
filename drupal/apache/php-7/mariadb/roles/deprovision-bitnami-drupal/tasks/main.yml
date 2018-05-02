@@ -1,0 +1,56 @@
+- name: delete Drupal deployment config
+  openshift_v1_deployment_config:
+    state: absent
+    name: drupal
+    namespace: '{{ namespace }}'
+
+- name: delete database deployment config
+  openshift_v1_deployment_config:
+    state: absent
+    name: mariadb
+    namespace: '{{ namespace }}'
+
+- name: delete Apache route
+  openshift_v1_route:
+    state: absent
+    name: apache-route
+    namespace: '{{ namespace }}'
+
+- name: delete Apache service
+  k8s_v1_service:
+    state: absent
+    name: apache-service
+    namespace: '{{ namespace }}'
+
+- name: delete database service
+  k8s_v1_service:
+    state: absent
+    name: database-service
+    namespace: '{{ namespace }}'
+
+- name: delete database volume claim
+  k8s_v1_persistent_volume_claim:
+    state: absent
+    name: database-volume-claim
+    namespace: '{{ namespace }}'
+
+- name: delete database credentials as secret
+  k8s_v1_secret:
+    state: absent
+    name: database-secret
+    namespace: '{{ namespace }}'
+
+- name: delete Drupal credentials as secret
+  k8s_v1_secret:
+    state: absent
+    name: drupal-secret
+    namespace: '{{ namespace }}'
+
+- name: delete Drupal volume claim
+  k8s_v1_persistent_volume_claim:
+    state: absent
+    namespace: '{{ namespace }}'
+    name: drupal-volume-claim
+
+- name: delete Apache config map
+  shell: oc delete configmap apache-conf

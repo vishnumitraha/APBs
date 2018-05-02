@@ -17,8 +17,8 @@
     name: wordpress-secret
     namespace: '{{ namespace }}'
     data:
-      WP_USERNAME: "{{ wp_username | b64encode }}"
-      WP_PASSWORD: "{{ wp_password | b64encode }}"
+      WP_USERNAME: "{{ wordpress_username | b64encode }}"
+      WP_PASSWORD: "{{ wordpress_password | b64encode }}"
 
 - name: create WordPress NGINX config from template
   template:
@@ -126,7 +126,7 @@
       service: wordpress
     containers:
       - name: wordpress
-        image: docker.io/javsalgar/bitnami-wordpress-rhel:nginx2
+        image: docker.io/javsalgar/bitnami-wordpress-rhel-nginx-php7
         imagePullPolicy: Always
         ports:
           - container_port: 8080

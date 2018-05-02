@@ -17,8 +17,8 @@
     name: wordpress-secret
     namespace: '{{ namespace }}'
     data:
-      WP_USERNAME: "{{ wp_username | b64encode }}"
-      WP_PASSWORD: "{{ wp_password | b64encode }}"
+      WP_USERNAME: "{{ wordpress_username | b64encode }}"
+      WP_PASSWORD: "{{ wordpress_password | b64encode }}"
 
 - name: create WordPress NGINX config from template
   template:
