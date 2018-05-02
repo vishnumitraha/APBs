@@ -131,7 +131,7 @@
           - name: drupal-data
             mountPath: /bitnami/drupal
         env:
-        # Database credentials
+          # Database credentials
           - name: MARIADB_HOST
             value: database-service
           - name: MARIADB_PORT_NUMBER
