@@ -1,4 +1,3 @@
-
 version: 1.0
 name: bitnami-lamp7-mariadb
 description: Bitnami LAMP7 with MariaDB Ansible Playbook Bundle

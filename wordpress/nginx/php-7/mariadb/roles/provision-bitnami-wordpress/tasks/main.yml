@@ -1,0 +1,229 @@
+- name: create database credentials as secret
+  k8s_v1_secret:
+    state: present
+    name: database-secret
+    namespace: '{{ namespace }}'
+    data:
+      DB_HOST: "{{ 'database-service' | b64encode }}"
+      DB_NAME: "{{ db_name | b64encode }}"
+      DB_PASSWORD: "{{ db_password | b64encode }}"
+      DB_PORT: "{{ '3306' | b64encode }}"
+      DB_TYPE: "{{ 'mysql' | b64encode }}"
+      DB_USER: "{{ db_user | b64encode }}"
+
+- name: create WordPress credentials as secret
+  k8s_v1_secret:
+    state: present
+    name: wordpress-secret
+    namespace: '{{ namespace }}'
+    data:
+      WP_USERNAME: "{{ wordpress_username | b64encode }}"
+      WP_PASSWORD: "{{ wordpress_password | b64encode }}"
+
+- name: create WordPress NGINX config from template
+  template:
+    src: wordpress.conf.j2
+    dest: /tmp/wordpress.conf
+
+- name: create WordPress NGINX configMap
+  shell: oc create configmap wordpress-nginx-conf --from-file=wordpress-nginx-conf=/tmp/wordpress.conf
+
+- name: create NGINX general config from template
+  template:
+    src: nginx.conf.j2
+    dest: /tmp/nginx.conf
+
+- name: create NGINX configMap
+  shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/nginx.conf
+
+- name: create database volume claim
+  k8s_v1_persistent_volume_claim:
+    state: present
+    name: database-volume-claim
+    namespace: "{{ namespace }}"
+    labels:
+      app: mariadb
+      service: mariadb
+    access_modes:
+      - ReadWriteOnce
+    resources_requests:
+      storage: "{{ volume_size }}"
+
+- name: create WordPress volume claim
+  k8s_v1_persistent_volume_claim:
+    state: present
+    name: wordpress-volume-claim
+    namespace: "{{ namespace }}"
+    labels:
+      app: wordpress
+      service: wordpress
+    access_modes:
+      - ReadWriteOnce
+    resources_requests:
+      storage: "{{ volume_size }}"
+
+- name: create database deployment config
+  openshift_v1_deployment_config:
+    state: present
+    name: mariadb
+    namespace: '{{ namespace }}'
+    labels:
+      app: mariadb
+      service: mariadb
+    replicas: 1
+    selector:
+      app: mariadb
+      service: mariadb
+    spec_template_metadata_labels:
+      app: mariadb
+      service: mariadb
+    containers:
+      - name: mariadb
+        image: registry.access.redhat.com/rhscl/mariadb-101-rhel7
+        imagePullPolicy: Always
+        ports:
+          - container_port: 3306
+            protocol: TCP
+        volume_mounts:
+          - name: mariadb-data
+            mount_path: /var/lib/mysql
+        working_dir: /
+        env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_USER
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_NAME
+    volumes:
+      - name: mariadb-data
+        persistent_volume_claim:
+          claim_name: database-volume-claim
+
+- name: create WordPress deployment config
+  openshift_v1_deployment_config:
+    state: present
+    name: wordpress
+    namespace: '{{ namespace }}'
+    labels:
+      app: wordpress
+      service: wordpress
+    replicas: 1
+    selector:
+      app: wordpress
+      service: wordpress
+    spec_template_metadata_labels:
+      app: wordpress
+      service: wordpress
+    containers:
+      - name: wordpress
+        image: docker.io/javsalgar/bitnami-wordpress-rhel-nginx-php7
+        imagePullPolicy: Always
+        ports:
+          - container_port: 8080
+            protocol: TCP
+        volumeMounts:
+          - name: wordpress-nginx-configuration
+            mountPath: /bitnami/nginx/conf/vhosts/wordpress.conf
+            subPath: wordpress-nginx-conf
+          - name: nginx-configuration
+            mountPath: /bitnami/nginx/conf/nginx.conf
+            subPath: nginx-conf
+          - name: wordpress-data
+            mountPath: /bitnami/wordpress
+        env:
+          # Database credentials
+          - name: MARIADB_HOST
+            value: database-service
+          - name: MARIADB_PORT_NUMBER
+            value: "3306"
+          - name: WORDPRESS_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_USER
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_PASSWORD
+          - name: WORDPRESS_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_NAME
+          # Some Wordpress basic data
+          - name: WORDPRESS_BLOG_NAME
+            value: "{{ blog_name }}"
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: WP_PASSWORD
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: WP_USERNAME
+    volumes:
+      - name: nginx-configuration
+        configMap:
+          name: nginx-conf
+      - name: wordpress-nginx-configuration
+        configMap:
+          name: wordpress-nginx-conf
+      - name: wordpress-data
+        persistentVolumeClaim:
+          claimName: wordpress-volume-claim
+
+- name: create database service
+  k8s_v1_service:
+    state: present
+    name: database-service
+    namespace: '{{ namespace }}'
+    labels:
+      app: mariadb
+      service: mariadb
+    selector:
+      app: mariadb
+      service: mariadb
+    ports:
+      - name: mysql
+        port: 3306
+        target_port: 3306
+
+- name: create NGINX service
+  k8s_v1_service:
+    state: present
+    name: nginx-service
+    namespace: '{{ namespace }}'
+    labels:
+      app: wordpress
+      service: wordpress
+    selector:
+      app: wordpress
+      service: wordpress
+    ports:
+      - name: web
+        port: 80
+        target_port: 8080
+
+- name: create NGINX route
+  openshift_v1_route:
+    state: present
+    name: nginx-route
+    namespace: '{{ namespace }}'
+    spec_port_target_port: web
+    labels:
+      app: wordpress
+      service: wordpress
+    to_name: nginx-service

@@ -1,0 +1,62 @@
+version: 1.0
+name: bitnami-wordpress-apache-php7-mysql
+description: Bitnami WordPress with Apache, PHP7 and MySQL Ansible Playbook Bundle
+bindable: False
+async: optional
+metadata:
+  displayName: Bitnami WordPress with Apache, PHP7 and MySQL (APB)
+  dependencies:
+    - 'registry.access.redhat.com/rhscl/mysql-57-rhel7'
+    - 'docker.io/javsalgar/bitnami-wordpress-rhel-apache-php7'
+  documentationUrl: https://docs.bitnami.com/installer/apps/wordpress/
+  imageUrl: https://d7umqicpi7263.cloudfront.net/img/product/7d426cb7-9522-4dd7-a56b-55dd8cc1c8d0/b73b9f05-0a96-4cb1-9136-93e5e76364fb.png
+  providerDisplayName: Bitnami
+plans:
+  - name: default
+    description: This default plan deploys WordPress with php-fpm 7.2, Apache and mysql
+    free: True
+    metadata: {}
+    parameters:
+      - name: blog_name
+        default: "My blog"
+        type: string
+        title: Blog Title
+        description: Title of your blog
+      - name: wordpress_username
+        default: user
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        type: string
+        title: WordPress admin username
+        description: WordPress admin username
+        required: true
+      - name: wordpress_password
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        type: string
+        title: WordPress admin password
+        description: WordPress admin password
+        display_type: password
+        required: true
+      - name: db_name
+        default: database
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database name
+        description: Database name
+      - name: db_user
+        default: dbuser
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database user
+        description: Database user
+      - name: db_password
+        type: string
+        title: Database password
+        description: Database password
+        display_type: password
+        required: true
+      - name: volume_size
+        type: enum
+        default: '1Gi'
+        enum: ['1Gi', '5Gi', '10Gi']
+        title: Database volume size
+        required: true

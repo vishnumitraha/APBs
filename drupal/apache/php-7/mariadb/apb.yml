@@ -1,0 +1,62 @@
+version: 1.0
+name: bitnami-drupal-apache-php7-mariadb
+description: Bitnami Drupal with Apache, PHP7 and MariaDB Ansible Playbook Bundle
+bindable: False
+async: optional
+metadata:
+  displayName: Bitnami Drupal with Apache, PHP7 and MariaDB (APB)
+  dependencies:
+    - 'registry.access.redhat.com/rhscl/mariadb-101-rhel7'
+    - 'docker.io/javsalgar/bitnami-drupal-rhel-apache-php7'
+  documentationUrl: https://docs.bitnami.com/installer/apps/drupal/
+  imageUrl: https://d33np9n32j53g7.cloudfront.net/assets/stacks/drupal/img/drupal-stack-110x117-9f93911da2f262ec0a2e5d49cdbd556f.png
+  providerDisplayName: Bitnami
+plans:
+  - name: default
+    description: This default plan deploys Drupal with php-fpm 7.2, Apache and MariaDB
+    free: True
+    metadata: {}
+    parameters:
+      - name: drupal_email
+        default: user@example.com
+        type: string
+        title: User email
+        description: User email
+      - name: drupal_username
+        default: user
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        type: string
+        title: Drupal admin username
+        description: Drupal admin username
+        required: true
+      - name: drupal_password
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        type: string
+        title: Drupal admin password
+        description: Drupal admin password
+        display_type: password
+        required: true
+      - name: db_name
+        default: database
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database name
+        description: Database name
+      - name: db_user
+        default: dbuser
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        title: Database user
+        description: Database user
+      - name: db_password
+        type: string
+        title: Database password
+        description: Database password
+        display_type: password
+        required: true
+      - name: volume_size
+        type: enum
+        default: '1Gi'
+        enum: ['1Gi', '5Gi', '10Gi']
+        title: Database volume size
+        required: true

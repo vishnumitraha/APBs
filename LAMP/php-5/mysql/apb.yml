@@ -1,4 +1,3 @@
-
 version: 1.0
 name: bitnami-lamp5-mysql
 description: Bitnami LAMP5 with MySQL Ansible Playbook Bundle

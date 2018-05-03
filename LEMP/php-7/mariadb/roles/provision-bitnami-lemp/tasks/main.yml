@@ -11,6 +11,14 @@
       DB_TYPE: "{{ 'mysql' | b64encode }}"
       DB_USER: "{{ db_user | b64encode }}"
 
+- name: create NGINX config from template
+  template:
+    src: default.conf.j2
+    dest: /tmp/default.conf
+
+- name: Create NGINX configMap
+  shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/default.conf
+
 - name: create database volume claim
   k8s_v1_persistent_volume_claim:
     state: present
@@ -26,6 +34,7 @@
 
 - name: create database deployment config
   openshift_v1_deployment_config:
+    state: present
     name: mariadb
     namespace: '{{ namespace }}'
     labels:
@@ -46,8 +55,8 @@
           - container_port: 3306
             protocol: TCP
         volume_mounts:
-          - mount_path: /var/lib/mysql
-            name: mariadb-data
+          - name: mariadb-data
+            mount_path: /var/lib/mysql
         working_dir: /
         env:
           - name: MYSQL_USER
@@ -72,6 +81,7 @@
 
 - name: create php-fpm-nginx deployment config
   openshift_v1_deployment_config:
+    state: present
     name: php-fpm-nginx
     namespace: '{{ namespace }}'
     labels:
@@ -109,31 +119,31 @@
           - name: application
             mountPath: /git
         env:
-        - name: DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_NAME
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_PASSWORD
-        - name: DB_PORT
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_PORT
-        - name: DB_TYPE
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_TYPE
-        - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: DB_USER
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_NAME
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_PASSWORD
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_PORT
+          - name: DB_TYPE
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_TYPE
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: DB_USER
       - name: nginx
         image: docker.io/alessfg/openshift-nginx
         imagePullPolicy: Always
@@ -157,9 +167,9 @@
 
 - name: create database service
   k8s_v1_service:
+    state: present
     name: database-service
     namespace: '{{ namespace }}'
-    state: present
     labels:
       app: mariadb
       service: mariadb
@@ -173,9 +183,9 @@
 
 - name: create NGINX service
   k8s_v1_service:
+    state: present
     name: nginx-service
     namespace: '{{ namespace }}'
-    state: present
     labels:
       app: php-fpm-nginx
       service: php-fpm-nginx
@@ -189,6 +199,7 @@
 
 - name: create NGINX route
   openshift_v1_route:
+    state: present
     name: nginx-route
     namespace: '{{ namespace }}'
     spec_port_target_port: web
@@ -196,11 +207,3 @@
       app: php-fpm-nginx
       service: php-fpm-nginx
     to_name: nginx-service
-
-- name: create NGINX config from template
-  template:
-    src: default.conf.j2
-    dest: /tmp/default.conf
-
-- name: Create NGINX configMap
-  shell: oc create configmap nginx-conf --from-file=nginx-conf=/tmp/default.conf
