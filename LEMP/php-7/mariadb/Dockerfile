@@ -35,4 +35,5 @@ c2Ugdm9sdW1lIHNpemUKICAgICAgICByZXF1aXJlZDogdHJ1ZQo="
 COPY playbooks /opt/apb/actions
 COPY roles /opt/ansible/roles
 RUN chmod -R g=u /opt/{ansible,apb}
+COPY licenses /licenses
 USER apb

@@ -40,11 +40,8 @@ CiAgICAgICAgdHlwZTogZW51bQogICAgICAgIGRlZmF1bHQ6ICcxR2knCiAgICAgICAgZW51bTog\
 WycxR2knLCAnNUdpJywgJzEwR2knXQogICAgICAgIHRpdGxlOiBEYXRhYmFzZSB2b2x1bWUgc2l6\
 ZQogICAgICAgIHJlcXVpcmVkOiB0cnVlCg=="
 
-
-
-
-
 COPY playbooks /opt/apb/actions
 COPY roles /opt/ansible/roles
 RUN chmod -R g=u /opt/{ansible,apb}
+COPY licenses /licenses
 USER apb
