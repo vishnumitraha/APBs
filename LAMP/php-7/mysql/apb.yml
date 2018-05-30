@@ -8,7 +8,7 @@ metadata:
   dependencies:
     - 'registry.access.redhat.com/rhscl/httpd-24-rhel7'
     - 'registry.access.redhat.com/rhscl/mysql-57-rhel7'
-    - 'docker.io/javsalgar/php-fpm-redhat:7.2'
+    - 'registry.connect.redhat.com/bitnami/php-fpm-7-2'
   documentationUrl: https://docs.bitnami.com/installer/infrastructure/lamp/
   imageUrl: https://d7umqicpi7263.cloudfront.net/img/product/963e08a0-1e5f-40b3-9a1d-72ae322da2ac/c6520697-2852-4094-a9a1-82939c353704.png
   providerDisplayName: Bitnami

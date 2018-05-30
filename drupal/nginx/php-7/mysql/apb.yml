@@ -7,7 +7,7 @@ metadata:
   displayName: Bitnami Drupal with Nginx, PHP7 and MariaDB (APB)
   dependencies:
     - 'registry.access.redhat.com/rhscl/mysql-57-rhel7'
-    - 'docker.io/javsalgar/bitnami-drupal-rhel-nginx-php7'
+    - 'registry.connect.redhat.com/bitnami/drupal-nginx-php7'
   documentationUrl: https://docs.bitnami.com/installer/apps/drupal/
   imageUrl: https://d33np9n32j53g7.cloudfront.net/assets/stacks/drupal/img/drupal-stack-110x117-9f93911da2f262ec0a2e5d49cdbd556f.png
   providerDisplayName: Bitnami

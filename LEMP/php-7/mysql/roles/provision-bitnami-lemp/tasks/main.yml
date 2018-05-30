@@ -110,7 +110,7 @@
             value: "true"
     containers:
       - name: php-fpm
-        image: docker.io/javsalgar/php-fpm-redhat:7.2
+        image: registry.connect.redhat.com/bitnami/php-fpm-7-2
         imagePullPolicy: Always
         ports:
           - container_port: 9000

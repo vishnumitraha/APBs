@@ -119,7 +119,7 @@
       service: drupal
     containers:
       - name: drupal
-        image: docker.io/javsalgar/bitnami-drupal-rhel-apache-php5
+        image: registry.connect.redhat.com/bitnami/drupal-apache-php5
         imagePullPolicy: Always
         ports:
           - container_port: 8080

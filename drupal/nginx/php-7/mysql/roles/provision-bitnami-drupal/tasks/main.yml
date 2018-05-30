@@ -127,7 +127,7 @@
       service: drupal
     containers:
       - name: drupal
-        image: docker.io/javsalgar/bitnami-drupal-rhel-nginx-php7
+        image: registry.connect.redhat.com/bitnami/drupal-nginx-php7
         imagePullPolicy: Always
         ports:
           - container_port: 8080
