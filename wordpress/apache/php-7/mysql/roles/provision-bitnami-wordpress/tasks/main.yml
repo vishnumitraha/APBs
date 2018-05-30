@@ -118,7 +118,7 @@
       service: wordpress
     containers:
       - name: wordpress
-        image: docker.io/javsalgar/bitnami-wordpress-rhel-apache-php7
+        image: registry.connect.redhat.com/bitnami/wordpress-apache-php7
         imagePullPolicy: Always
         ports:
           - container_port: 8080
